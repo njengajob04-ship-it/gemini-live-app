@@ -30,9 +30,9 @@ app.get('/admin.html', (req, res, next) => {
 // Serve public static files
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Set signDS.html as default home page
+// Set index.html as default home page
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'signDS.html'));
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // Socket.IO real-time connection logic
