@@ -165,5 +165,22 @@
       }, 1000);
     }
   </script>
+  <script>
+  // Check if there are query parameters in the URL
+  if (window.location.search) {
+    const url = new URL(window.location.href);
+    
+    // Remove UTM tracking parameters
+    url.searchParams.delete('utm_source');
+    url.searchParams.delete('utm_medium');
+    url.searchParams.delete('utm_campaign');
+    url.searchParams.delete('utm_term');
+    url.searchParams.delete('utm_content');
+
+    // Update the browser address bar without reloading the page
+    const cleanUrl = url.pathname + (url.searchParams.toString() ? '?' + url.searchParams.toString() : '') + url.hash;
+    window.history.replaceState({}, document.title, cleanUrl);
+  }
+</script>
 </body>
 </html>
