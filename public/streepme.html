@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Streepme - Contributor Dashboard</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap">
+<style>
+:root{--ink:#0F1B2D;--muted:#4A5568;--bg:#F2F4F7;--card:#fff;--line:#E2E8F0;--navy:#0F1B2D;--navy2:#1E2D45;--green:#0B7A55;--amber-bg:#FFF8E1;--amber-line:#F0D58A;--amber:#D98A00}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:Manrope,system-ui,sans-serif;color:var(--ink);background:var(--bg)}
+button{font:700 15px Manrope,system-ui,sans-serif;cursor:pointer}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #2F80ED;outline-offset:2px}
+h1,h2{margin:0}
+.app{display:grid;grid-template-columns:232px minmax(0,1fr);min-height:100vh}
+
+/* sidebar */
+.sidebar{background:var(--navy);color:#E6EBF2;padding:28px 20px;display:flex;flex-direction:column;gap:28px;position:sticky;top:0;height:100vh;overflow-y:auto}
+.logo{font-size:22px;font-weight:800;letter-spacing:-.5px;color:#fff}
+.nav{display:flex;flex-direction:column;gap:6px}
+.nav button{all:unset;box-sizing:border-box;display:flex;justify-content:space-between;align-items:center;min-height:44px;padding:0 14px;border-radius:10px;font:600 15px Manrope,system-ui,sans-serif;color:#B6C2D4;cursor:pointer}
+.nav button:hover{background:#17263C}
+.nav button[aria-current="page"]{background:var(--navy2);color:#fff}
+.nav button:focus-visible{outline:3px solid #7DB2FF}
+.tag{font-size:11px;font-weight:700;background:var(--navy2);padding:3px 8px;border-radius:10px;color:#8696AD}
+.tip{margin-top:auto;background:var(--navy2);border-radius:12px;padding:16px;font-size:13px;line-height:1.5;color:#B6C2D4}
+.tip b{display:block;color:#fff;margin-bottom:4px}
+.overlay{display:none}
+
+/* main */
+main{padding:28px 36px 48px;display:flex;flex-direction:column;gap:24px;min-width:0}
+.top{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:16px}
+.top-left{display:flex;align-items:center;gap:14px}
+.menu-btn{display:none;width:44px;height:44px;border:0;border-radius:10px;background:var(--navy);color:#fff;align-items:center;justify-content:center}
+.top h1{font-size:28px;font-weight:800;letter-spacing:-.5px}
+.sub{margin-top:4px;font-size:14px;color:var(--muted)}
+.top-right{display:flex;flex-wrap:wrap;align-items:center;gap:12px}
+.pill{display:inline-flex;align-items:center;gap:8px;min-height:36px;padding:0 14px;border-radius:20px;background:#FFF1CC;color:#6B4300;font-size:13px;font-weight:700}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--amber)}
+.btn{min-height:44px;padding:0 20px;border:0;border-radius:10px;background:var(--green);color:#fff}
+.btn:hover{background:#096648}
+.btn.locked{background:#E2E8F0;color:var(--muted);cursor:not-allowed}
+.btn.ghost{background:transparent;border:2px solid var(--green);color:var(--green)}
+.btn.ghost:hover{background:#E8F6F0}
+
+.banner{background:var(--amber-bg);border:1px solid var(--amber-line);border-radius:14px;padding:22px 24px;display:flex;flex-wrap:wrap;gap:24px;align-items:center}
+.banner-text{flex:1 1 320px;display:flex;gap:14px}
+.banner-text svg{flex:none}
+.banner h2{font-size:17px;color:#4A2F00}
+.banner p{margin:6px 0 14px;font-size:14px;line-height:1.55;color:#5C3B00}
+.steps{flex:1 1 320px;display:flex;flex-direction:column;gap:10px;font-size:14px;font-weight:600}
+.step{display:flex;align-items:center;gap:10px}
+.step i{width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-style:normal;font-size:13px;border:2px solid #CBD5E1;color:#fff}
+.step.done{color:#065F46}.step.done i{background:var(--green);border-color:var(--green)}
+.step.now{color:#4A2F00}.step.now i{border-color:var(--amber)}
+.step.next{color:#64748B}
+
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px}
+.card{background:var(--card);border-radius:14px;padding:20px}
+.stat .l{font-size:13px;font-weight:600;color:var(--muted)}
+.stat .v{font-size:30px;font-weight:800;margin-top:6px}
+.stat .n{font-size:12px;color:var(--muted);margin-top:4px}
+.stat .n.g{color:var(--green);font-weight:700}
+
+.grid{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:16px;align-items:stretch}
+.panel{background:var(--card);border-radius:14px;padding:24px;display:flex;flex-direction:column;gap:18px;scroll-margin-top:16px}
+.panel h2{font-size:18px;font-weight:800}
+.panel-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px}
+.seg{display:flex;background:var(--bg);border-radius:10px;padding:4px;gap:4px}
+.seg button{min-height:40px;padding:0 16px;border:0;border-radius:8px;background:transparent;color:var(--muted);font-size:14px}
+.seg button[aria-pressed="true"]{background:var(--navy);color:#fff}
+.drop{border:2px dashed #CBD5E1;border-radius:14px;padding:36px 20px;text-align:center;background:#F1F5F9;display:flex;flex-direction:column;align-items:center;gap:10px}
+.drop .t{font-size:17px;font-weight:800}
+.drop .s{font-size:13px;color:var(--muted)}
+.rates{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.rate{border:1px solid #D5DBE5;border-radius:12px;padding:16px;transition:.15s}
+.rate.on{border-color:var(--green);box-shadow:0 0 0 2px #BFE8D8}
+.rate .l{font-size:13px;font-weight:600;color:var(--muted)}
+.rate .v{font-size:24px;font-weight:800;margin-top:4px}
+.rate .n{font-size:12px;color:var(--muted);margin-top:2px}
+.empty{height:150px;border-radius:10px;background:#F1F5F9;display:flex;align-items:center;justify-content:center;text-align:center;padding:0 20px;font-size:14px;line-height:1.5;color:var(--muted)}
+.rows{border-top:1px solid var(--line);padding-top:14px;display:flex;flex-direction:column;gap:8px;font-size:14px}
+.rows div{display:flex;justify-content:space-between;gap:12px}
+.rows span{color:var(--muted)}
+.empty-box{border-radius:12px;background:#F8FAFC;border:1px solid var(--line);padding:36px 20px;text-align:center}
+.empty-box b{display:block;font-size:16px;margin-bottom:6px}
+.empty-box span{font-size:14px;color:var(--muted)}
+.flash{animation:flash 1.4s ease}
+@keyframes flash{0%,60%{box-shadow:0 0 0 3px #7DB2FF}100%{box-shadow:0 0 0 0 transparent}}
+
+/* forms and lists */
+.form{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;align-items:end}
+label{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:700}
+input,select{min-height:46px;border:1px solid #CBD5E1;border-radius:10px;padding:0 12px;font:500 15px Manrope,system-ui,sans-serif;background:#fff;color:var(--ink)}
+.err{color:#B42318;font-size:13px;font-weight:600;min-height:18px}
+.list{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:10px;font-size:15px;line-height:1.55}
+
+/* toast */
+.toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,30px);background:var(--navy);color:#fff;padding:14px 20px;border-radius:12px;font-size:14px;font-weight:600;max-width:calc(100vw - 32px);opacity:0;pointer-events:none;transition:.25s;z-index:50}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+
+/* responsive */
+@media (max-width:980px){
+ .grid{grid-template-columns:1fr}
+}
+@media (max-width:860px){
+ .app{grid-template-columns:1fr}
+ .sidebar{position:fixed;inset:0 auto 0 0;width:260px;z-index:40;transform:translateX(-100%);transition:transform .25s}
+ .sidebar.open{transform:none}
+ .overlay.show{display:block;position:fixed;inset:0;background:rgba(15,27,45,.55);z-index:30}
+ .menu-btn{display:inline-flex}
+ main{padding:20px 16px 40px}
+ .top h1{font-size:22px}
+}
+@media (max-width:520px){
+ .panel{padding:18px}
+ .banner{padding:18px}
+ .top-right{width:100%}
+ .top-right .btn{flex:1}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<div class="app">
+
+<aside class="sidebar" id="sidebar" aria-label="Main navigation">
+ <div class="logo">Streepme</div>
+ <nav class="nav" id="nav">
+  <button data-go="dashboard" aria-current="page">Dashboard</button>
+  <button data-go="uploadCard">Upload <span class="tag">Locked</span></button>
+  <button data-go="submissionsCard">My submissions</button>
+  <button data-go="earningsCard">Earnings</button>
+  <button data-go="payout">Payout methods</button>
+  <button data-go="guidelines">Guidelines</button>
+ </nav>
+ <div class="tip"><b>Quality tip</b>Sharp, well-lit, original files in 1080p or higher earn at the top of each range.</div>
+</aside>
+<div class="overlay" id="overlay"></div>
+
+<main>
+ <header class="top">
+  <div class="top-left">
+   <button class="menu-btn" id="menuBtn" aria-label="Open menu" aria-expanded="false" aria-controls="sidebar">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+   </button>
+   <div>
+    <h1 id="pageTitle">Welcome to Streepme</h1>
+    <div class="sub" id="pageSub">Your account is new and waiting for approval</div>
+   </div>
+  </div>
+  <div class="top-right">
+   <span class="pill"><span class="dot"></span>Pending review</span>
+   <button class="btn locked" data-locked="Withdrawals unlock once your account is approved." aria-disabled="true">Withdraw $0.00</button>
+  </div>
+ </header>
+
+ <!-- DASHBOARD VIEW -->
+ <div id="view-dashboard" style="display:flex;flex-direction:column;gap:24px">
+
+  <section class="banner">
+   <div class="banner-text">
+    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#6B4300" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+    <div>
+     <h2>Your account is pending verification...</h2>
+     <p>Thanks for signing up. Our team is&nbsp; going to monitor your stripchat account which usually takes&nbsp; 1-2 weeks. Uploads and withdrawals unlock once you are approved. Once approved, your account will be credited with $50 as waiting compensation.</p>
+     <button class="btn ghost" id="checkStatus">Check status</button>
+    </div>
+   </div>
+   <div class="steps">
+    <div class="step done"><i>✓</i>Account created</div>
+    <div class="step now"><i></i>Account under review</div>
+    <div class="step next"><i></i>Start uploading and earning</div>
+   </div>
+  </section>
+
+  <section class="stats">
+   <div class="card stat"><div class="l">Available balance</div><div class="v">$0.00</div><div class="n g">$50 waiting compensation after approval</div></div>
+   <div class="card stat"><div class="l">Pending review</div><div class="v">0 files</div><div class="n">Usually reviewed in 24–48 hours</div></div>
+   <div class="card stat"><div class="l">Approved images</div><div class="v">0</div><div class="n">$13–$20 each</div></div>
+   <div class="card stat"><div class="l">Approved videos</div><div class="v">0</div><div class="n">$45–$80 each</div></div>
+  </section>
+
+  <section class="grid">
+   <div class="panel" id="uploadCard">
+    <div class="panel-head">
+     <h2>Upload new content</h2>
+     <div class="seg" role="group" aria-label="Content type">
+      <button id="tabImage" aria-pressed="true">Image</button>
+      <button id="tabVideo" aria-pressed="false">Video</button>
+     </div>
+    </div>
+    <div class="drop">
+     <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+     <div class="t">Uploads unlock after verification</div>
+     <div class="s" id="formats">Once approved, you can upload JPG, PNG, HEIC images.</div>
+     <button class="btn locked" id="browseBtn" data-locked="You can upload files once your account is approved." aria-disabled="true" style="margin-top:6px">Browse files</button>
+    </div>
+    <div class="rates">
+     <div class="rate on" id="rateImage"><div class="l">Image payout</div><div class="v">$13 – $20</div><div class="n">per approved image</div></div>
+     <div class="rate" id="rateVideo"><div class="l">Video payout</div><div class="v">$45 – $80</div><div class="n">per approved video</div></div>
+    </div>
+   </div>
+
+   <div class="panel" id="earningsCard">
+    <h2>Earnings</h2>
+    <div class="empty">No earnings yet. Your activity will appear here after your first approved upload.</div>
+    <div class="rows">
+     <div><span>Next payout</span><strong>After verification</strong></div>
+     <div><span>Method</span><strong id="methodLabel">Not added</strong></div>
+    </div>
+    <button class="btn ghost" data-go="payout">Add payout method</button>
+   </div>
+  </section>
+
+  <section class="panel" id="submissionsCard">
+   <h2>Recent submissions</h2>
+   <div class="empty-box"><b>No submissions yet</b><span>Files you upload after verification will be listed here with their review status and payout.</span></div>
+  </section>
+ </div>
+
+ <!-- PAYOUT VIEW -->
+ <section class="panel" id="view-payout" hidden>
+  <h2>Payout methods</h2>
+  <p class="sub" style="margin:0">Add where you want to be paid. Payouts start after your account is approved.</p>
+  <form class="form" id="payoutForm" novalidate>
+   <label>Method
+    <select id="pmType"><option>M-Pesa</option><option>Bank transfer</option><option>PayPal</option></select>
+   </label>
+   <label><span id="pmLabel">Phone number</span>
+    <input id="pmValue" autocomplete="off" inputmode="tel" placeholder="e.g. 0712 345 678">
+   </label>
+   <button class="btn" type="submit">Save method</button>
+  </form>
+  <div class="err" id="pmErr" role="alert"></div>
+  <div class="rows" id="pmSaved" hidden>
+   <div><span>Saved method</span><strong id="pmSavedText"></strong></div>
+   <button class="btn ghost" id="pmRemove" type="button">Remove</button>
+  </div>
+ </section>
+
+ <!-- GUIDELINES VIEW -->
+ <section class="panel" id="view-guidelines" hidden>
+  <h2>Guidelines</h2>
+  <ol class="list">
+   <li>Upload only original files that you own and have the right to share.</li>
+   <li>Images: JPG, PNG or HEIC. Videos: MP4 or MOV.</li>
+   <li>Use good lighting and keep files sharp and in 1080p or higher for the top of each payout range.</li>
+   <li>Images pay $13–$20 each and videos pay $45–$80 each once approved.</li>
+   <li>Uploads and withdrawals unlock after your account is approved.</li>
+   <li>Once approved, your account is credited with $50 as waiting compensation.</li>
+  </ol>
+ </section>
+</main>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+  var $=function(s){return document.querySelector(s)};
+  var $$=function(s){return Array.prototype.slice.call(document.querySelectorAll(s))};
+
+  /* toast */
+  var tt;
+  function toast(msg){
+    var t=$('#toast'); t.textContent=msg; t.classList.add('show');
+    clearTimeout(tt); tt=setTimeout(function(){t.classList.remove('show')},3200);
+  }
+
+  /* menu (mobile drawer) */
+  var sb=$('#sidebar'), ov=$('#overlay'), mb=$('#menuBtn');
+  function menu(open){
+    sb.classList.toggle('open',open); ov.classList.toggle('show',open);
+    mb.setAttribute('aria-expanded',open?'true':'false');
+  }
+  mb.addEventListener('click',function(){menu(!sb.classList.contains('open'))});
+  ov.addEventListener('click',function(){menu(false)});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')menu(false)});
+  window.addEventListener('resize',function(){if(innerWidth>860)menu(false)});
+
+  /* views + navigation */
+  var titles={
+    dashboard:['Welcome to Streepme','Your account is new and waiting for approval'],
+    payout:['Payout methods','Choose how you want to get paid'],
+    guidelines:['Guidelines','How to earn the most from your uploads']
+  };
+  function setActive(key){
+    $$('#nav button').forEach(function(b){
+      if(b.getAttribute('data-go')===key) b.setAttribute('aria-current','page'); else b.removeAttribute('aria-current');
+    });
+  }
+  function show(view){
+    ['dashboard','payout','guidelines'].forEach(function(v){
+      var el=$('#view-'+v); if(el) el.hidden=(v!==view);
+    });
+    $('#pageTitle').textContent=titles[view][0];
+    $('#pageSub').textContent=titles[view][1];
+  }
+  function go(key){
+    if(key==='payout'||key==='guidelines'){ show(key); setActive(key); scrollTo(0,0); }
+    else if(key==='dashboard'){ show('dashboard'); setActive('dashboard'); scrollTo(0,0); }
+    else {
+      show('dashboard'); setActive(key);
+      var el=document.getElementById(key);
+      if(el){ el.scrollIntoView({behavior:'smooth',block:'start'}); el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); }
+    }
+    menu(false);
+  }
+  $$('[data-go]').forEach(function(b){b.addEventListener('click',function(){go(b.getAttribute('data-go'))})});
+
+  /* locked actions */
+  $$('[data-locked]').forEach(function(b){b.addEventListener('click',function(){toast(b.getAttribute('data-locked'))})});
+
+  /* check status */
+  $('#checkStatus').addEventListener('click',function(){
+    toast('Your account is still under review. We will let you know once it changes.');
+  });
+
+  /* image / video toggle */
+  function type(t){
+    var img=(t==='image');
+    $('#tabImage').setAttribute('aria-pressed',img);
+    $('#tabVideo').setAttribute('aria-pressed',!img);
+    $('#rateImage').classList.toggle('on',img);
+    $('#rateVideo').classList.toggle('on',!img);
+    $('#formats').textContent=img
+      ?'Once approved, you can upload JPG, PNG, HEIC images.'
+      :'Once approved, you can upload MP4, MOV videos.';
+  }
+  $('#tabImage').addEventListener('click',function(){type('image')});
+  $('#tabVideo').addEventListener('click',function(){type('video')});
+
+  /* payout method */
+  var KEY='streepme_payout', saved=null;
+  try{ saved=JSON.parse(localStorage.getItem(KEY)||'null'); }catch(e){}
+  var hints={
+    'M-Pesa':['Phone number','e.g. 0712 345 678','tel'],
+    'Bank transfer':['Account number','Account number','numeric'],
+    'PayPal':['PayPal email','name@example.com','email']
+  };
+  function renderMethod(){
+    $('#methodLabel').textContent=saved?saved.label:'Not added';
+    $('#pmSaved').hidden=!saved;
+    if(saved) $('#pmSavedText').textContent=saved.label;
+  }
+  $('#pmType').addEventListener('change',function(){
+    var h=hints[this.value]; $('#pmLabel').textContent=h[0];
+    var i=$('#pmValue'); i.placeholder=h[1]; i.setAttribute('inputmode',h[2]); i.value=''; $('#pmErr').textContent='';
+  });
+  $('#payoutForm').addEventListener('submit',function(e){
+    e.preventDefault();
+    var m=$('#pmType').value, v=$('#pmValue').value.trim(), err=$('#pmErr');
+    if(m==='PayPal'){
+      if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)){err.textContent='Enter a valid PayPal email.';return;}
+      saved={label:'PayPal · '+v.replace(/^(.).*(@.*)$/,'$1•••$2')};
+    }else{
+      var d=v.replace(/\D/g,'');
+      if(d.length<7){err.textContent='Enter a valid '+(m==='M-Pesa'?'phone':'account')+' number.';return;}
+      saved={label:m+' · ••• '+d.slice(-4)};
+    }
+    err.textContent=''; $('#pmValue').value='';
+    try{localStorage.setItem(KEY,JSON.stringify(saved));}catch(x){}
+    renderMethod(); toast('Payout method saved.');
+  });
+  $('#pmRemove').addEventListener('click',function(){
+    saved=null; try{localStorage.removeItem(KEY);}catch(x){}
+    renderMethod(); toast('Payout method removed.');
+  });
+  renderMethod();
+})();
+</script>
+</body>
+</html>
